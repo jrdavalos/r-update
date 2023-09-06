@@ -13,7 +13,7 @@ install.packages(missing)
 # si besoin
 update.packages()
 
-# pour les repos Github
+# pour les repos Github (non finalisé)
 update_github <- function() {
   pkgs <- installed.packages(fields = "RemoteType")
   github_pkgs <- pkgs[pkgs[, "RemoteType"] %in% "github", "Package"]
