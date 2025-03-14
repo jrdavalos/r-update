@@ -1,14 +1,26 @@
 # avant
-tmp <- installed.packages()
-installedpkgs <- as.vector(tmp[is.na(tmp[,"Priority"]), 1])
+tmp <- installed.packages(fields = c("GithubUsername", "GithubRepo"))
+installedpkgs <- as.data.frame(tmp[is.na(tmp[,"Priority"]),
+                                   c("Package", "Priority", "GithubUsername", "GithubRepo")],
+                               row.names = 1)
 save(installedpkgs, file = "installed_old.rda")
 
 # après
 load("installed_old.rda")
 tmp <- installed.packages()
 installedpkgs.new <- as.vector(tmp[is.na(tmp[,"Priority"]), 1])
-missing <- setdiff(installedpkgs, installedpkgs.new)
-install.packages(missing)
+missing <- installedpkgs[!installedpkgs$Package %in% installedpkgs.new,]
+install.packages(missing$Package[is.na(missing$GithubRepo)])
+if (any(!is.na(missing$GithubRepo))) {
+  if (!"devtools" %in% installedpkgs$Package) {
+    install.packages("devtools")
+  }
+  git <- missing$Package[!is.na(missing$GithubRepo)]
+  repo <- paste0(missing$GithubUsername, "/", missing$GithubRepo)
+  lapply(repo, function(x) {
+    install_github(repo = x)
+  })
+}
 
 # si besoin
 update.packages()
